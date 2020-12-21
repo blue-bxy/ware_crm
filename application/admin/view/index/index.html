@@ -1,0 +1,468 @@
+{include file="public/header" /}
+
+	<body class="layui-layout-body hp-white-theme">
+		<div class="layui-layout layui-layout-admin">
+			<div class="layui-header">
+				<div class="layui-logo">
+					仓库管理系统
+				</div>
+				<!-- 头部区域（可配合layui已有的水平导航） -->
+				<ul class="layui-nav layui-layout-left">
+					<li class="hp-side-menu">
+						<span><i class="layui-icon " >&#xe668;</i></span>
+					</li>
+					<li class="layui-nav-item">
+						<a href="">阿里云</a>
+					</li>
+					<li class="layui-nav-item">
+						<a href="">CRM系统</a>
+					</li>
+					<li class="layui-nav-item">
+						<a href="">EHR系统</a>
+					</li>
+					<li class="layui-nav-item">
+						<a href="javascript:;">其它系统</a>
+						<dl class="layui-nav-child">
+							<dd>
+								<a href="">邮件管理</a>
+							</dd>
+							<dd>
+								<a href="">消息管理</a>
+							</dd>
+							<dd>
+								<a href="">授权管理</a>
+							</dd>
+						</dl>
+					</li>
+				</ul>
+				<ul class="layui-nav layui-layout-right">
+					<li class="layui-nav-item">
+						<a class="name" href="javascript:;"><i class="layui-icon"></i>主题<span class="layui-nav-more"></span></a>
+						<dl class="layui-nav-child layui-anim layui-anim-upbit">
+							<dd>
+								<a skin="hp-black-theme" class="hp-theme-skin-switch" href="javascript:;">低调黑</a>
+							</dd>
+							<dd>
+								<a skin="hp-blue-theme" class="hp-theme-skin-switch" href="javascript:;">炫酷蓝</a>
+							</dd>
+							<dd>
+								<a skin="hp-green-theme" class="hp-theme-skin-switch" href="javascript:;">原谅绿</a>
+							</dd>
+						</dl>
+					</li>
+					<li class="layui-nav-item">
+						<a href="javascript:;" onclick="loginOut()">退出</a>
+					</li>
+				</ul>
+			</div>
+
+			<div class="layui-side hp-left-menu">
+				<div class="layui-side-scroll">
+					<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+					<ul class="layui-nav hp-nav-none">
+						<li class="layui-nav-item">
+							<a href="javascript:;" class="hp-user-name">
+								<img src='{$portrait}' onerror="this.src='../../static/images/head_default.gif'" class="layui-circle-img"><span class="hp-kd">{:session('admin.loginname')}</span>
+							</a>
+							<dl class="layui-nav-child">
+								<dd>
+									<a href="javascript:;" onclick="wk.layer_show1('基本资料',$('#pInfo'),550,405)"><i class="fa fa-user-circle-o"></i>基本资料</a>
+								</dd>
+								<dd>
+									<a href="javascript:;" onclick="wk.layer_show1('修改头像',$('#headCrop'),700,570)"><i class="fa fa-crop"></i>修改头像</a>
+								</dd>
+								<dd>
+									<a href="javascript:;" onclick="wk.layer_show1('修改密码',$('#changePwd'),500,320);"><i class="fa fa-unlock-alt"></i>修改密码</a>
+								</dd>
+							</dl>
+						</li>
+					</ul>
+
+					<ul class="layui-nav layui-nav-tree " lay-filter="test">
+						{if !empty($menu)}
+							{foreach name="menu" item="vo"}
+								<li class="layui-nav-item">
+									{if condition="$vo.href eq '#'"}
+										<a class="" href="javascript:;"><i class="layui-icon {$vo.icon} hp-icon-size"></i>{$vo.title}</a>
+									{else /}
+										<a class="" href="javascript:;"><i class="layui-icon {$vo.icon} hp-icon-size"></i>{$vo.title}</a>
+									{/if}
+									{if condition="$vo.href eq '#'"}
+										<dl class="layui-nav-child">
+											{if !empty($vo['child'])}
+												{foreach name="$vo['child']" item="v"}
+													{if condition="$v.href neq '##'"}
+														<dd>
+															<a class="hp-tab-add" hp-href="{$v.route}" href="javascript:;">
+																<i class="layui-icon {$v.icon} hp-icon-size"></i> {$v.title}
+															</a>
+														</dd>
+													{else /}
+														<dd>
+															<a href="javascript:;">
+																<i class="layui-icon {$v.icon} hp-icon-size"></i>{$v.title}
+																<span class="layui-nav-more"></span>
+															</a>
+															<dl class="layui-nav-child">
+																{if !empty($v['child'])}
+																	{foreach name="$v['child']" item="z"}
+																		<dd>
+																			<a class="hp-tab-add" hp-href="{$z.route}" href="javascript:;">
+																				{$z.title}
+																			</a>
+																		</dd>
+																	{/foreach}
+																{/if}
+															</dl>
+														</dd>
+													{/if}
+												{/foreach}
+											{/if}
+										</dl>
+									{/if}
+								</li>
+							{/foreach}
+						{/if}
+					</ul>
+				</div>
+			</div>
+			<!--个人信息-->
+			<div id="pInfo" style="display:none;">
+				<div class="layui-fluid layui-col-xs12">
+					<div class="layui-card-body layui-form layui-form-pane">
+						<div class="layui-row layui-form-item ">
+							<div class="layui-form-item">
+								<label class="layui-form-label">用户名</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" style="cursor:not-allowed;" value="{:session('admin.loginname')}" disabled/>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label">地&nbsp;&nbsp;&nbsp;&nbsp;址</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" style="cursor:not-allowed;"  value="{:session('admin.address')}" disabled/>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label">性&nbsp;&nbsp;&nbsp;&nbsp;别</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" style="cursor:not-allowed;" value="{:session('admin.sex')}" disabled/>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label">入职时间</label>
+								<div class="layui-input-block">
+									<input type="text" class="layui-input" style="cursor:not-allowed;"  value="{:session('admin.hiredate')}" disabled/>
+								</div>
+							</div>
+							<div class="layui-form-item layui-form-text">
+								<label class="layui-form-label">描&nbsp;&nbsp;&nbsp;&nbsp;述</label>
+								<div class="layui-input-block">
+									<textarea class="layui-textarea"style="cursor:not-allowed;resize:none" disabled>{:session('admin.remark')}</textarea>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--修改密码-->
+			<div id="changePwd" style="display:none;">
+				<div class="layui-fluid layui-col-xs12">
+					<div class="layui-card-body layui-form layui-form-pane">
+						<div class="layui-row layui-form-item ">
+							<div class="layui-form-item">
+								<label class="layui-form-label">当前密码</label>
+								<div class="layui-input-block">
+									<input type="password" name="old_pwd"  placeholder="输入当前密码" lay-verify="required|oldpwd" class="layui-input" autocomplete="off"/>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label">新密码</label>
+								<div class="layui-input-block">
+									<input type="password" name="new_pwd"  placeholder="密码必须6到16位，且不能出现空格" lay-verify="required|newpwd" class="layui-input" autocomplete="off"/>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label">确认密码</label>
+								<div class="layui-input-block">
+									<input type="password" name="r_pwd"  placeholder="密码必须6到16位，且不能出现空格" lay-verify="required|rpwd" class="layui-input" autocomplete="off"/>
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<div class="layui-input-block">
+									<button class="layui-btn" lay-submit="" lay-filter="updatepwd">确认修改
+									</button>
+									<button class="layui-btn layui-btn-primary" onclick="layer.closeAll()">关闭</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="layui-body">
+				<!-- 内容主体区域 -->
+				<div class="layui-tab hp-tab " style="" lay-filter="hp-tab-filter" lay-allowclose="true">
+					<ul class="layui-tab-title" style="">
+						<li class="layui-this" lay-id="0">
+							<i class="layui-icon hp-icon-size">&#xe68e;</i>首页
+						</li>
+					</ul>
+					<div class="layui-tab-content">
+						<div class="layui-tab-item layui-show">
+							<div class="layui-carousel" id="test1">
+								<div carousel-item class="lb_img">
+									<div>
+										<img src="../../static/images/1.jpg">
+									</div>
+									<div>
+										<img src="../../static/images/2.jpg">
+									</div>
+									<div>
+											<img src="../../static/images/3.jpg">
+									</div>
+									<div>
+											<img src="../../static/images/4.jpg">
+									</div>
+								</div>
+							</div>
+							<!--时间线 -->
+							<div>
+								<fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+									<legend>仓库管理系统</legend>
+								</fieldset>
+								<ul class="layui-timeline">
+									<li class="layui-timeline-item">
+										<i class="layui-icon layui-timeline-axis"></i>
+										<div class="layui-timeline-content layui-text">
+											<div class="layui-timeline-title" style="color: red;">
+												<div class="layui-timeline-title" style="color: red;">
+													v1.2.0-更新内容如下
+												</div>
+												<ul>
+													<li>
+														1、 更新原layui 版本 2.2.5到2.4.3
+													</li>
+													<li>
+														2、 设置侧边栏并自适应
+													</li>
+													<li>
+														3、 多级菜单(示例页面二级菜单)
+													</li>
+													<li>
+														4、 如果还要用以前的table样式 <br/>
+														  可以使用hpTable,已成为内置模块
+													</li>
+
+												</ul>
+											</div>
+										</div>
+									</li>
+									<li class="layui-timeline-item">
+										<i class="layui-icon layui-timeline-axis"></i>
+										<div class="layui-timeline-content layui-text">
+											<div class="layui-timeline-title" style="color: red;">
+												<div class="layui-timeline-title" style="color: red;">
+													v1.1.0-更新内容如下
+												</div>
+												<ul>
+													<li>
+														1、 归总模块(具体查看hpModules)
+													</li>
+													<li>
+														2、 样式美化：菜单加上图标、选项卡加上主题色
+													</li>
+
+												</ul>
+											</div>
+										</div>
+									</li>
+									
+									<li class="layui-timeline-item">
+										<i class="layui-icon layui-anim layui-anim-rotate layui-anim-loop layui-timeline-axis"></i>
+										<div class="layui-timeline-content layui-text">
+											<div class="layui-timeline-title" style="color: red;">
+												1.增加配置类hpConfig，兼容静态服务器只能get,若要修改post改参数变量isAjaxType='post' 即可
+											</div>
+										</div>
+									</li>
+									<li class="layui-timeline-item">
+										<i class="layui-icon layui-anim layui-anim-rotate layui-anim-loop layui-timeline-axis"></i>
+										<div class="layui-timeline-content layui-text">
+											<div class="layui-timeline-title" style="color: red;">
+												更新layui 版本 2.2.5 并添加了如下功能
+											</div>
+											<ul>
+												<li>
+													示例页面
+												</li>
+												<li>
+													数据列表页面
+												</li>
+												<li>
+													数据分析(百度图表技术Echarts)
+												</li>
+											</ul>
+										</div>
+									</li>
+									<li class="layui-timeline-item">
+										<i class="layui-icon layui-timeline-axis"></i>
+										<div class="layui-timeline-content layui-text">
+											<div class="layui-timeline-title" style="color: red;">
+												2018-没想到layui已经陪我到了2018年,感叹青春正在奔跑
+											</div>
+										</div>
+									</li>
+									<li class="layui-timeline-item">
+										<i class="layui-icon layui-timeline-axis"></i>
+										<div class="layui-timeline-content layui-text">
+											<div class="layui-timeline-title" style="color: red;">2017末尾,想把学习的layui成果分享->hp-layui-1.0 </div>
+											<ul>
+												<li>
+													基本功能
+												</li>
+												<li>
+													扩展组件(layui 模块写法)
+												</li>
+											</ul>
+										</div>
+									</li>
+									<li class="layui-timeline-item">
+										<i class="layui-icon layui-timeline-axis"></i>
+										<div class="layui-timeline-content layui-text">
+											<div class="layui-timeline-title" style="color: red;">2017 中途,更新版本layui-2.x 感觉layui-越来越好</div>
+										</div>
+									</li>
+									<li class="layui-timeline-item">
+										<i class="layui-icon layui-timeline-axis"></i>
+										<div class="layui-timeline-content layui-text">
+											<div class="layui-timeline-title" style="color: red;">2017伊始,接触 layui-1.x 学习使用 </div>
+										</div>
+									</li>
+									<li class="layui-timeline-item">
+										<div class="layui-timeline-content layui-text">
+											<div class="layui-timeline-title">
+												<p>Hosted by
+													<a href="https://pages.coding.me" style="font-weight: bold">Coding Pages</a>
+												</p>
+											</div>
+										</div>
+
+									</li>
+
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="layui-footer">
+				<!-- 底部固定区域 -->
+				©WarehouseManagement-version-1.0
+			</div>
+		</div>
+		{include file="public/footer" /}
+		<script>
+			// 配置
+			layui.config({
+				base: '../../static/js/hpModules/' // 扩展模块目录
+			}).extend({ // 模块别名
+				hpIndex: 'admin/hpIndex',
+				hpTab: 'hpComponent/hpTab',
+				hpRightMenu: 'hpComponent/hpRightMenu',
+				hpFormAll: 'hpComponent/hpFormAll',
+				hpLayedit: 'hpComponent/hpLayedit',
+				hpTheme: 'hpComponent/hpTheme',
+			});
+
+			//JavaScript代码区域
+			layui.use(['form','element', 'carousel', 'hpTheme', 'hpTab', 'hpLayedit', 'hpRightMenu', 'hpIndex'], function() {
+				var element = layui.element;
+				var carousel = layui.carousel; //轮播
+				var hpTab = layui.hpTab;
+				var hpRightMenu = layui.hpRightMenu;
+				var hpTheme = layui.hpTheme;
+				var hpIndex = layui.hpIndex;
+				var form=layui.form;
+				$ = layui.jquery;
+				/*var test=layui.test;
+				console.loginfo(test.version) */
+				// 初始化主题
+				hpTheme.init();
+				//初始化轮播
+				carousel.render({
+					elem: '#test1',
+					width: '100%', //设置容器宽度
+					interval: 1500,
+					height: '500px',
+					arrow: 'none', //不显示箭头
+					anim: 'fade', //切换动画方式
+				});
+
+				// 初始化 动态tab
+				hpTab.init();
+				// 右键tab菜单
+				hpRightMenu.init();
+				// 主页公共js
+				hpIndex.init();
+			});
+
+			var loginOut = function(){
+				layer.confirm('你确定要退出吗？', {icon: 3,title:'提示'}, function(index){
+					layer.close(index);
+					window.location.href="{:url('admin/login/loginOut')}";
+				});
+			}
+		</script>
+		<script>
+			layui.use(['form'],function () {
+				var form=layui.form;
+				form.verify({
+					oldpwd:function(value,item){
+						var checkResult = "";
+						$.ajax({
+							url:"{:url('admin/index/editPwd')}",
+							type:'post',
+							data:"old_pwd="+value+"&type=checkPassword",
+							async: false,//必须同步
+							success:function(res){
+								if(res.code == 100){
+									checkResult = "当前密码错误";
+								}
+							}
+						})
+						return checkResult;
+					},
+					newpwd: [/^[\S]{6,16}$/,'密码必须6到16位，且不能出现空格'],
+					rpwd:function(value,item){
+						if(!/^[\S]{6,16}$/.test(value)){
+							return '密码必须6到16位，且不能出现空格';
+						}
+						var newpwd = $('input[name=new_pwd]').val();
+						if(newpwd != value){
+							return "两次输入密码不一致";
+						}
+					}
+				});
+				//修改密码
+				form.on('submit(updatepwd)', function (data) {
+					$('.layui-btn').addClass('layui-disabled').attr('disabled','disabled');
+					$.ajax({
+						url:"{:url('admin/index/editPwd')}",
+						type:'post',
+						dataType:'json',
+						data:data.field,
+						success:function(res){
+							if (res.code == 200) {
+								wk.success(res.msg,'',"{:url('admin/Index/loginOut')}");
+							} else {
+								wk.error(res.msg,'$(".layui-btn").removeClass(\'layui-disabled\').removeAttr(\'disabled\')');
+							}
+						}
+					})
+				});
+			});
+		</script>
+	</body>
+
+</html>

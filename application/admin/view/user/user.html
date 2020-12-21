@@ -1,0 +1,263 @@
+{include file="public/header" /}
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <!-- 查询条件开始 -->
+        <blockquote class="layui-elem-quote">
+            <form action="" method="post" id="searchFrm" lay-filter="searchFrm" class="layui-form layui-form-pane">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="start" class="layui-input" onfocus="wk.lay_date(this);" placeholder="入职开始日期">
+                        </div>
+                        <div class="layui-form-mid">
+                            -
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="end" class="layui-input" onfocus="wk.lay_date(this);" placeholder="入职结束日期">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" placeholder="真实姓名/登录名" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="address" placeholder="用户地址" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="hidden" name="deptid" id="deptid" placeholder="所属部门" autocomplete="off" class="layui-input">
+                            <ul id="deptTree" class="dtree" data-id="0"></ul>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="remark" placeholder="备注" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block" style="text-align: center;">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="LAY-search"><span class="layui-icon layui-icon-search"></span>查询</button>
+                        <button  lay-filter="LAY-search" id="empty" class="layui-btn layui-btn-warm"><span class="layui-icon layui-icon-refresh-1"></span>重置</button>
+                    </div>
+                </div>
+            </form>
+        </blockquote>
+        <!-- 查询条件结束-->
+        <div class="layui-card-body">
+            <!--用户表格-->
+            <table id="LAY-table-manage" lay-filter="LAY-table-manage" style="margin-top: 10px"></table>
+            <!--头部工具栏-->
+            <script type="text/html" id="toolbarDemo">
+                <div class="layui-btn-container">
+                    <button type="button" class="layui-btn" lay-event="adduser">
+                        <i class="layui-icon">&#xe624;</i>添加用户
+                    </button>
+                    <button type="button" class="layui-btn layui-btn-danger" lay-event="batchdel">
+                        <i class="layui-icon">&#xe640;</i> 批量删除
+                    </button>
+                </div>
+            </script>
+            <!--操作模板-->
+            <script type="text/html" id="opeBar">
+                <button type="button"  title="编辑" class="layui-btn layui-btn-xs" onclick="wk.layer_show('编辑用户','{:url('admin/User/edit_user')}?id={{d.id}}')"><span class="layui-icon layui-icon-edit"></span></button>
+                <button type="button" title="分配角色" class="layui-btn layui-btn-xs layui-btn-normal" lay-event="giveRole"><span class="layui-icon layui-icon-username"></span></button>
+                <button type="button"  title="删除" class="layui-btn layui-btn-xs layui-btn-danger" onclick="wk.confirm('{{d.id}}','{:url('admin/User/del_user')}')"><span class="layui-icon layui-icon-delete"></span></button>
+            </script>
+            <!--状态模板-->
+            <script type="text/html" id="staBar">
+                {{# if(d.available==1){ }}
+                <span class="layui-badge layui-bg-green">可用</span>
+                {{# }else{ }}
+                <span class="layui-badge">禁用</span>
+                {{# } }}
+            </script>
+            <script type="text/html" id="sex">
+                {{# if(d.sex==1){ }}
+                <div>女</div>
+                {{# }else{ }}
+                <div>男</div>
+                {{# } }}
+            </script>
+            <!--图片模板-->
+            <script type="text/html" id="imgTpl">
+                <div>
+                    <img src="{{d.imgpath}}" class="layui-circle-img" onerror="this.src='../../static/images/head_default.gif'"/>
+                </div>
+            </script>
+        </div>
+    </div>
+    <!-- 用户分配角色弹出层-->
+    <div style="display: none;padding: 5px 10px" id="selectUserRoleDiv">
+        <table class="layui-hide" id="roleTable" lay-filter="roleTable"></table>
+    </div>
+</div>
+{include file="public/footer" /}
+<script type="text/javascript">
+    layui.extend({
+        dtree: '../../static/layui_ext/dtree/dtree'   // {/}的意思即代表采用自有路径，即不跟随 base 路径
+    }).use(['table','form','dtree'], function () {
+            var form = layui.form;
+            var table = layui.table;
+            var dtree = layui.dtree;
+
+            // 初始化树
+            deptTree= dtree.renderSelect({
+                elem: "#deptTree",
+                dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                dataFormat: "list",  //配置data的风格为list
+                response:{message:"msg",statusCode:0},  //修改response中返回数据的定义
+                url: "admin/dept/json" // 使用url加载（可与data加载同时存在）
+            });
+
+            // 绑定节点点击
+            dtree.on("node(deptTree)" ,function(obj){
+                $("#deptid").val(obj.param.nodeId);
+            });
+
+            var tableIns=table.render({
+            elem: '#LAY-table-manage'
+            , url: '{:url("admin/User/user")}'
+            ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            ,response: {
+                statusCode: 220 //成功的状态码，默认：0
+            }
+            , page: true
+            , even: true //开启隔行背景
+            , size: 'lg' //sm小尺寸的表格 lg大尺寸
+            // ,width:100
+            , autoSort: false
+            , height: "full-50"
+            , cellMinWidth: 150
+            , limits: [10, 20, 30, 40, 50]
+            , limit: 10
+            , loading: true
+            , id: 'LAY-table'
+            , cols: [[
+                {type: 'checkbox', fixed: 'left',}
+                , {type:'numbers',  title: '序号'}
+                , {field: 'name',  title: '真实姓名', align: 'center'}
+                , {field: 'loginname',  title: '登录名', align: 'center'}
+                , {field: 'imgpath',  title: '头像', align: 'center',templet:'#imgTpl'}
+                , {field: 'address',  title: '地址', align: 'center'}
+                , {field: 'sex',  title: '性别', align: 'center',templet: '#sex'}
+                , {field: 'remark',  title: '备注', align: 'center'}
+                , {field: 'deptid',  title: '所属部门', align: 'center',templet:"<div>{{d.dept.title}}</div>"}
+                , {field: 'pid',  title: '直属领导', align: 'center'}
+                ,{field:'available', title:'是否可用',align:'center', templet: '#staBar'}
+                , {field: 'hiredate',  title: '入职时间', sort: true, align: 'center'}
+                , {fixed: 'right',  title: '操作', width:'200',align: 'center', toolbar: '#opeBar'}
+            ]]
+            ,done: function(res, curr, count){
+                    //图片查看器
+                    $('.layui-circle-img').viewer({
+                        url: 'data-original',
+                    });
+
+                //处理删除某一页最后一条数据的BUG
+                if(res.data.length==0&&curr!=1){
+                    tableIns.reload({
+                        page:{
+                            curr:(curr-1)
+                        }
+                    });
+                }
+            }
+        });
+
+        //事件
+        table.on('toolbar(LAY-table-manage)', function(obj) {
+            //批量删除
+            if (obj.event == 'batchdel') {
+                wk.batchDel(getIds(), "{:url('admin/User/batchDelUser')}");
+            }
+            //添加用户
+            if(obj.event=='adduser'){
+                wk.layer_show("添加用户","{:url('admin/User/add_user')}");
+            }
+        });
+        var getIds = function () {
+            var ids = [];
+            var checkStatus = table.checkStatus('LAY-table')
+                ,data = checkStatus.data;
+            $.each(data,function(index,item){
+                ids.push(item['id'])
+            });
+            return ids;
+        }
+
+        //监听行工具条事件
+        table.on("tool(LAY-table-manage)",function(obj){
+            var data = obj.data; //获得当前行数据
+            if(obj.event=='giveRole'){
+                giveRole(data);
+            }
+        });
+        //打开分配角色的页面
+        function giveRole(data){
+            layer.open({
+                type:1,
+                content:$("#selectUserRoleDiv"),
+                area:['600px','550px'],
+                title:'分配【'+data.name+'】的角色',
+                btn: ['<span class=layui-icon>&#xe605;确认分配</span>', '<span class=layui-icon>&#x1006;关闭</span>'],
+                yes: function(index, layero){
+                    var checkStatus = table.checkStatus('roleTable');
+                    var params="uid="+data.id;
+                    $.each(checkStatus.data,function(index,item){
+                        params+="&rid="+item.id;
+                    });
+                    $.post("admin/user/saveUserRole",params,function(res){
+                        if(res.code==200){
+                            layer.closeAll();
+                            layer.msg(res.msg);
+                        }else{
+                            layer.msg('角色分配失败');
+                        }
+
+                    })
+                },
+                btn2: function(index, layero){
+                    //return false 开启该代码可禁止点击该按钮关闭
+                },
+                btnAlign: 'c',//使按钮居中
+                success:function(){
+                    initRoleTable(data);
+                }
+            });
+        }
+
+        function initRoleTable(data){
+            var roleTableIns=table.render({
+                elem: '#roleTable'
+                ,url:'admin/user/initRoleByUserId'
+                ,where:{
+                    id:data.id
+                }
+                ,cols: [ [
+                    {type:'radio',align:'center'}
+                    ,{field:'id', title:'ID',align:'center'}
+                    ,{field:'name', title:'角色名称',align:'center'}
+                    ,{field:'remark', title:'角色备注',align:'center'}
+                ] ]
+            });
+        }
+    });
+</script>
+<!--layui.table图片显示不全，需重新定义CSS  -->
+<style type="text/css">
+    /*.layui-table-cell{
+        !*height:auto;*!
+        height:100px;
+        line-height: 100px;
+    }*/
+    .layui-table tr {
+        height: 70px;/*数值按需更改*/
+    }
+</style>
+</body>
+</html>

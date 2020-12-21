@@ -1,0 +1,14 @@
+{include file='public/header' /}
+<body>
+<div>
+    <h1>{$notice.title}<span class="layui-badge-rim">{$notice.update_time}</span></h1>
+    <hr>
+    <h3>发布人:{$notice.opername}</h3>
+    <div>
+        <blockquote class="layui-elem-quote">
+            {$notice.content|raw}
+        </blockquote>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,104 @@
+{include file="public/header" /}
+<body>
+<form class="layui-form layui-form-pane" action="" style="padding: 30px 30px">
+    <div class="layui-form-item">
+        <label class="layui-form-label">供应商名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="providername" lay-verify="required" autocomplete="off" placeholder="请输入供应商名称" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">供应商电话</label>
+        <div class="layui-input-block">
+            <input type="text" name="providerphone" lay-verify="required" autocomplete="off" placeholder="请输入供应商电话" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮编</label>
+        <div class="layui-input-block">
+            <input type="text" name="zip"  autocomplete="off" lay-verify="required" placeholder="请输入供应商邮编" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">公司地址</label>
+        <div class="layui-input-block">
+            <input type="text" name="address" autocomplete="off" lay-verify="required" placeholder="请输入公司地址" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">联系人</label>
+        <div class="layui-input-block">
+            <input type="text" name="connectionperson" lay-verify="required" autocomplete="off" placeholder="请输入联系人" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">联系人电话</label>
+        <div class="layui-input-block">
+            <input type="text" name="phone" lay-verify="required|phone" autocomplete="off" placeholder="请输入联系人电话" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮箱</label>
+        <div class="layui-input-block">
+            <input type="text" name="email" lay-verify="required|email" autocomplete="off" placeholder="请输入供应商邮箱" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">开户银行</label>
+        <div class="layui-input-block">
+            <input type="text" name="bank" lay-verify="required" autocomplete="off" placeholder="请输入开户银行" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">银行卡账号</label>
+        <div class="layui-input-block">
+            <input type="text" name="bankaccountnumber" lay-verify="required" autocomplete="off" placeholder="请输入银行卡帐号" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">传真</label>
+        <div class="layui-input-block">
+            <input type="text" name="fax" lay-verify="required" autocomplete="off" placeholder="请输入供应商传真" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item" pane="">
+        <label class="layui-form-label">是否可用</label>
+        <div class="layui-input-block">
+            <input type="radio" name="available" value="1" title="可用" checked="">
+            <input type="radio" name="available" value="0" title="不可用">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <button class="layui-btn" lay-submit="" lay-filter="add">提交</button>
+        <button class="layui-btn layui-btn-primary" onclick="wk.layer_close('close')">关闭</button>
+    </div>
+</form>
+{include file="public/footer" /}
+<script>
+    layui.use(['layer','jquery','form'], function(){
+        var form=layui.form;
+        //监听提交事件
+        form.on('submit(add)',function (data) {
+            $('.layui-btn').addClass('layui-disabled').attr('disabled', 'disabled');
+            $.ajax({
+                url: "{:url('admin/provider/add_provider')}",
+                type: 'post',
+                dataType: 'json',
+                data: data.field,
+                success: function (res) {
+                    if (res.code == 1) {
+                        layer.msg(res.msg, {icon: 6, time: 1500, shade: 0.1}, function (index) {
+                            wk.layer_close();
+                        })
+                    } else {
+                        $(".layui-btn").removeClass('layui-disabled').removeAttr('disabled');
+                        layer.msg(res.msg, {icon: 2, time: 1500, shade: 0.1});
+                        return false;
+                    }
+                }
+            })
+        })
+    });
+</script>
+</body>
+</html>

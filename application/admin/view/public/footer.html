@@ -1,0 +1,112 @@
+<div id="headCrop" style="display:none">
+    <div class="tailoring-content-one">
+        <label title="选择图片" for="chooseImg" class="layui-btn">
+            <input type="file" accept="image/jpg,image/jpeg,image/png" name="file" id="chooseImg" class="hidden" onchange="selectImg(this)"><i class="fa fa-cloud-upload"></i>
+            选择图片
+        </label>
+    </div>
+    <div class="ibox-content">
+        <div class="tailoring-content">
+            <div class="tailoring-content-two">
+                <div class="tailoring-box-parcel" style="text-align: center">
+                    <img id="tailoringImg">
+                    <span class="word" style="position:relative;top:50%;font-size:14px;color: #c2c2c2">仅支持JPG、JPEG、PNG格式的图片文件</span><br>
+                    <!--<span class="size" style="position:relative;top:50%;font-size:16px">文件不能大于2MB</span>-->
+                </div>
+                <div class="preview-box-parcel">
+                    <!--<p>图片预览：</p>-->
+                    <div class="square previewImg"></div>
+                    <div class="circular previewImg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <span class="layui-btn cropper-reset-btn" style="float:left">复位</span>
+        <span class="layui-btn zoomIn" style="float:left">放大</span>
+        <span class="layui-btn zoomOut" style="float:left">缩小</span>
+        <span class="layui-btn cropper-rotate-btn" style="float:left">旋转</span>
+        <span class="layui-btn cropper-scaleX-btn" style="float:left">换向</span>
+        <span class="layui-btn " id="sureCut"><i class="fa fa-save"></i> 保存</span>
+        <span class="layui-btn layui-btn-primary" onclick="layer.closeAll()"><i class="fa fa-close"></i> 关闭</span>
+    </div>
+</div>
+<script src="__LAYUI__/layui.js"></script>
+<script src="__JS__/wk.js"></script>
+<script src="__JS__/jquery.min.js"></script>
+<script src="__JS__/ueditor/ueditor.config.js"></script><!--百度富文本-->
+<script src="__JS__/ueditor/ueditor.all.js"></script><!--百度富文本-->
+<script src="__LAYUIEXT__/dtree/dtree.js"></script><!--dtree树-->
+<script src="../../static/cropper/cropper.min.js"></script><!--图片裁剪组件-->
+<script src="../../static/cropper/Crop.js"></script><!--图片裁剪组件-->
+<script src="../../static/viewer/viewer.js"></script><!--图片查看器-->
+<script>
+    //裁剪后的处理(保存)
+    $("#sureCut").on("click",function () {
+        if ($("#tailoringImg").attr("src") == null ){
+            layer.msg('请先选择头像',{anim:6})
+        }else{
+            var cas = $('#tailoringImg').cropper('getCroppedCanvas');//获取被裁剪后的canvas
+            var base64url = cas.toDataURL('image/png'); //转换为base64地址形式
+            //关闭裁剪框
+            layer.closeAll();
+            $.ajax({
+                url : "{:url('admin/index/updateFace')}",
+                type : "post",
+                dataType : "json",
+                data:"base64url="+base64url+"&id={:session('admin.id')}",
+                success : function(data) {
+                    if(data.code == 200){
+                        wk.success(data.msg,'window.location.reload()')
+                    }else if(data.code == 100){
+                        wk.error(data.msg);
+                    }
+                }
+            });
+        }
+    });
+
+    //view初始化查看图片
+    $(function(){
+        $('.layui-circle-img,.img').viewer({
+            url: 'data-original',
+        });
+    });
+
+
+    //layui公共操作
+    layui.use(['form','table'], function() {
+        var form = layui.form
+            ,table = layui.table
+            ,$=layui.jquery
+        //重置搜索框
+        $('#empty').on('click', function () {
+            $('.layui-input').val('');
+            // $(".search").trigger("chosen:updated");
+            $('select').each(function (i, j) {
+                $(j).find("option:selected").attr("selected", false);
+                form.render('select')
+            });
+        });
+        //监听搜索
+        form.on('submit(LAY-search)', function (data) {
+            //执行重载
+            table.reload('LAY-table', {
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                }
+                ,where: data.field
+            });
+        });
+        //表格排序
+        table.on('sort(LAY-table-manage)', function(obj){
+            table.reload('LAY-table', {
+                initSort: obj //记录初始排序，如果不设的话，将无法标记表头的排序状态
+                ,where: { //请求参数
+                    field: obj.field //排序字段
+                    ,order: obj.type //排序方式
+                }
+            });
+        });
+    });
+</script>

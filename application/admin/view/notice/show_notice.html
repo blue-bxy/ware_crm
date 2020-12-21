@@ -1,0 +1,123 @@
+{include file="public/header" /}
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="start" class="layui-input" onfocus="wk.lay_date(this);" placeholder="开始日期">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end" class="layui-input" onfocus="wk.lay_date(this);" placeholder="结束日期">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="opername" placeholder="发布人" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="title" placeholder="公告标题" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <button class="layui-btn" lay-submit="" lay-filter="LAY-search">立即搜索</button>
+                        <button  class="layui-btn layui-btn-normal" id="empty"  lay-submit="" lay-filter="LAY-search">重置</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <table id="LAY-table-manage" lay-filter="LAY-table-manage"></table>
+            <!--头部工具栏-->
+            <script type="text/html" id="toolbarDemo">
+                <div class="layui-btn-container">
+                    <button type="button" class="layui-btn" lay-event="addnotice">
+                        <i class="layui-icon">&#xe624;</i>添加公告
+                    </button>
+                    <button type="button" class="layui-btn layui-btn-danger" lay-event="batchdel">
+                        <i class="layui-icon">&#xe640;</i> 批量删除
+                    </button>
+                </div>
+            </script>
+            <!--操作模板-->
+            <script type="text/html" id="opeBar">
+                <button type="button"  title="更新" class="layui-btn layui-btn-xs" onclick="wk.layer_show('更新公告','{:url('admin/Notice/edit_notice')}?id={{d.id}}')"><span class="layui-icon layui-icon-edit"></span></button>
+                <button type="button" title="查看详情" class="layui-btn layui-btn-xs layui-btn-normal" onclick="wk.layer_show('查看公告','{:url('admin/Notice/see_notice')}?id={{d.id}}')"><span class="layui-icon layui-icon-cellphone"></span></button>
+                <button type="button"  title="删除" class="layui-btn layui-btn-xs layui-btn-danger" onclick="wk.confirm('{{d.id}}','{:url('admin/Notice/del_notice')}')"><span class="layui-icon layui-icon-delete"></span></button>
+            </script>
+        </div>
+    </div>
+</div>
+{include file="public/footer" /}
+<script>
+    layui.use(['table','form'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , table = layui.table
+        var tableIns=table.render({
+            elem: '#LAY-table-manage'
+            , url: '{:url("admin/Notice/show_notice")}'
+            ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            ,response: {
+                statusCode: 220 //成功的状态码，默认：0
+            }
+            , page: true
+            , even: true //开启隔行背景
+            , size: 'lg' //sm小尺寸的表格 lg大尺寸
+            // ,width:100
+            , autoSort: false
+            , height: "full-50"
+            , cellMinWidth: 150
+            , limits: [10, 20, 30, 40, 50]
+            , limit: 10
+            , loading: true
+            , id: 'LAY-table'
+            , cols: [[
+                {type: 'checkbox', fixed: 'left',}
+                , {type:'numbers',  title: '序号'}
+                , {field: 'title',  title: '标题', align: 'center', templet: '#titleTpl'}
+                , {field: 'opername',  title: '发布人', align: 'center'}
+                , {field: 'create_time',  title: '发布时间', sort: true, align: 'center',templet:"<div>{{layui.util.toDateString(d.create_time*1000,'yyyy年MM月dd日')}}</div>"}
+                , {fixed: 'right',  title: '操作', align: 'center', toolbar: '#opeBar'}
+            ]]
+            ,done: function(res, curr, count){ //处理删除某一页最后一条数据的BUG
+                if(res.data.length==0&&curr!=1){
+                    tableIns.reload({
+                        page:{
+                            curr:(curr-1)
+                        }
+                    });
+                }
+            }
+        });
+        //事件
+        table.on('toolbar(LAY-table-manage)', function(obj) {
+            //批量删除
+            if (obj.event == 'batchdel') {
+                wk.batchDel(getIds(), "{:url('admin/Notice/batchDelNotice')}");
+            }
+            //添加公告
+            if(obj.event=='addnotice'){
+                wk.layer_show("添加公告","{:url('admin/Notice/add_notice')}");
+            }
+        });
+        var getIds = function () {
+            var ids = [];
+            var checkStatus = table.checkStatus('LAY-table')
+                ,data = checkStatus.data;
+            $.each(data,function(index,item){
+                ids.push(item['id'])
+            });
+            return ids;
+        }
+    });
+</script>
+</body>
+</html>

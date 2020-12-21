@@ -1,0 +1,67 @@
+{include file="public/header" /}
+<body>
+<div class="layui-fluid layui-col-md12">
+    <div class="layui-card">
+        <div class="layui-card-body layui-form">
+            <form>
+            <div class="layui-row layui-col-space10 layui-form-item ">
+                <div class="layui-form-item layui-col-md-offset1 layui-col-md8">
+                    <label class="layui-form-label">公告标题:</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="title"  placeholder="公告标题" class="layui-input ">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-col-md-offset1 layui-col-md8">
+                    <label class="layui-form-label">公告内容:</label>
+                    <div class="layui-input-block" >
+                        <textarea name="content" id="LAY_editor2" placeholder=""></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item layui-col-md-offset1 layui-col-md8">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" id="add">提交
+                        </button>
+                        <button class="layui-btn layui-btn-primary" onclick="wk.layer_close('close')">关闭</button>
+                    </div>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="public/footer" /}
+<script>
+    //百度富文本编辑器
+    var editor = UE.getEditor('LAY_editor2', {
+        initialFrameHeight:450,
+        autoHeight: false,
+        autoHeightEnabled:false,
+        autoFloatEnabled:false
+    });
+
+        $("#add").click(function () {
+            $('.layui-btn').addClass('layui-disabled').attr('disabled', 'disabled');
+            $.ajax({
+                url: "{:url('admin/Notice/add_notice')}",
+                type: 'post',
+                dataType: 'json',
+                data: $('form').serialize(),
+                success: function (res) {
+                    if (res.code == 1) {
+                        layer.msg(res.msg, {icon: 6, time: 1500, shade: 0.1}, function (index) {
+                            wk.layer_close();
+                            location.href=res.url;
+                        })
+                    } else {
+                        $(".layui-btn").removeClass('layui-disabled').removeAttr('disabled');
+                        layer.msg(res.msg, {icon: 2, time: 1500, shade: 0.1});
+                        return false;
+                    }
+                }
+            })
+        })
+
+
+</script>
+</body>
+</html>

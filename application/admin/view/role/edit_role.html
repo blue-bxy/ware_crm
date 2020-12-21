@@ -1,0 +1,58 @@
+{include file="public/header" /}
+<body>
+<form class="layui-form layui-form-pane" action="" style="margin-left: 10px">
+    <div class="layui-form-item">
+        <label class="layui-form-label">角色名称</label>
+        <div class="layui-input-block">
+            <input type="hidden" name="id" value="{$role.id}">
+            <input type="text" name="name" value="{$role.name}" lay-verify="required" placeholder="请输入角色名称" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item" pane="">
+        <label class="layui-form-label">是否可用</label>
+        <div class="layui-input-block">
+            <input type="radio" name="available" value="1" title="可用" {if condition="$role.available eq '1'"} checked {/if}>
+            <input type="radio" name="available" value="0" title="不可用" {if condition="$role.available eq '0'"} checked {/if}>
+        </div>
+    </div>
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">角色备注</label>
+        <div class="layui-input-block">
+            <textarea placeholder="不填请留空" name="remark" class="layui-textarea">{$role.remark}</textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <button class="layui-btn" lay-submit="" lay-filter="edit">提交</button>
+        <button class="layui-btn layui-btn-primary" onclick="wk.layer_close('close')">关闭</button>
+    </div>
+</form>
+{include file="public/footer" /}
+<script>
+    layui.use(['layer','jquery','form'], function(){
+        var form=layui.form;
+
+        //监听提交事件
+        form.on('submit(edit)',function (data) {
+            $('.layui-btn').addClass('layui-disabled').attr('disabled', 'disabled');
+            $.ajax({
+                url: "{:url('admin/Role/edit_role')}",
+                type: 'post',
+                dataType: 'json',
+                data: data.field,
+                success: function (res) {
+                    if (res.code == 1) {
+                        layer.msg(res.msg, {icon: 6, time: 1500, shade: 0.1}, function (index) {
+                            wk.layer_close();
+                        })
+                    } else {
+                        $(".layui-btn").removeClass('layui-disabled').removeAttr('disabled');
+                        layer.msg(res.msg, {icon: 2, time: 1500, shade: 0.1});
+                        return false;
+                    }
+                }
+            })
+        })
+    });
+</script>
+</body>
+</html>

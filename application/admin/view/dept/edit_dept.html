@@ -1,0 +1,109 @@
+{include file="public/header" /}
+<body>
+<form class="layui-form layui-form-pane" action="" style="margin-left: 10px">
+    <div class="layui-form-item">
+        <label class="layui-form-label">父级部门</label>
+        <div class="layui-input-block">
+            <input type="hidden" name="pid" id="pid" lay-verify="required" value="{$dept.pid}">
+            <ul id="selTree"  class="dtree" data-id="0"></ul>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">部门名称</label>
+        <div class="layui-input-block">
+            <input type="hidden" name="id" value="{$dept.id}">
+            <input type="text" name="title" lay-verify="required" placeholder="请输入部门名称" value="{$dept.title}" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">部门地址</label>
+        <div class="layui-input-block">
+            <input type="text" name="address" value="{$dept.address}" lay-verify="required" placeholder="请输入部门地址" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item" pane="">
+        <label class="layui-form-label">是否可用</label>
+        <div class="layui-input-block">
+            <input type="radio" name="available" value="1" title="可用" {if condition="$dept.available eq '1'"} checked {/if} >
+            <input type="radio" name="available" value="0" title="不可用" {if condition="$dept.available eq '0'"} checked {/if} >
+        </div>
+    </div>
+    <div class="layui-form-item" pane="">
+        <label class="layui-form-label">是否展开</label>
+        <div class="layui-input-block">
+            <input type="radio" name="open" value="1" title="展开" {if condition="$dept.open eq '1'"} checked {/if}>
+            <input type="radio" name="open" value="0" title="不展开" {if condition="$dept.open eq '0'"} checked {/if}>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">排序</label>
+        <div class="layui-input-block">
+            <input type="text" name="ordernum" value="{$dept.ordernum}" lay-verify="required" placeholder="请填写排序值,值越大就靠后" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">部门备注</label>
+        <div class="layui-input-block">
+            <textarea placeholder="不填请留空" name="remark" class="layui-textarea">{$dept.remark}</textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <button class="layui-btn" lay-submit="" lay-filter="update">提交</button>
+        <button class="layui-btn layui-btn-primary" onclick="wk.layer_close('close')">关闭</button>
+    </div>
+</form>
+{include file="public/footer" /}
+<script>
+    $(function () {
+        layui.extend({
+            dtree: '../../static/layui_ext/dtree/dtree'   // {/}的意思即代表采用自有路径，即不跟随 base 路径
+        }).use(['dtree','layer','jquery','form'], function(){
+            var dtree = layui.dtree;
+            var form=layui.form;
+            //初始化下拉树
+            var selectTree=dtree.renderSelect({
+                elem: "#selTree",
+                width: "100%", // 可以在这里指定树的宽度来填满div
+                dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                dataFormat: "list",  //配置data的风格为list
+                response:{message:"msg",statusCode:0},  //修改response中返回数据的定义
+                menubar: true, //开启菜单栏
+                url: "admin/dept/json" ,// 使用url加载（可与data加载同时存在）
+                selectInitVal: "{$dept.pid}",//指定默认值
+            });
+
+            //给父级部门赋值
+
+            //监听点击的方法
+            dtree.on("node(selTree)" ,function(obj){
+                $("#pid").val(obj.param.nodeId);
+                console.log(obj.param.nodeId); // 点击当前节点传递的参数
+            });
+
+            //监听提交事件
+            form.on('submit(update)',function (data) {
+                $('.layui-btn').addClass('layui-disabled').attr('disabled', 'disabled');
+                $.ajax({
+                    url: "{:url('admin/Dept/edit_dept')}",
+                    type: 'post',
+                    dataType: 'json',
+                    data: data.field,
+                    success: function (res) {
+                        if (res.code == 1) {
+                            layer.msg(res.msg, {icon: 6, time: 1500, shade: 0.1}, function (index) {
+                                wk.layer_close('dtree');
+                            })
+                        } else {
+                            $(".layui-btn").removeClass('layui-disabled').removeAttr('disabled');
+                            layer.msg(res.msg, {icon: 2, time: 1500, shade: 0.1});
+                            return false;
+                        }
+                    }
+                })
+            })
+        });
+    });
+</script>
+</body>
+</html>

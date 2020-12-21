@@ -1,0 +1,31 @@
+{include file="public/header" /}
+<body>
+<!-- 存放树的容器 -->
+<ul id="deptTree" class="dtree" data-id="0"></ul>
+{include file="public/footer" /}
+<script type="text/javascript">
+    var deptTree;
+    layui.extend({
+        dtree: '../../static/layui_ext/dtree/dtree'   // {/}的意思即代表采用自有路径，即不跟随 base 路径
+    }).use(['dtree','layer','jquery'], function(){
+        var dtree = layui.dtree;
+
+        // 初始化树
+        deptTree= dtree.render({
+            elem: "#deptTree",
+            dataStyle: "layuiStyle",  //使用layui风格的数据格式
+            dataFormat: "list",  //配置data的风格为list
+            response:{message:"msg",statusCode:0},  //修改response中返回数据的定义
+            url: "admin/menu/json" // 使用url加载（可与data加载同时存在）
+        });
+
+        // 绑定节点点击
+        dtree.on("node(deptTree)" ,function(obj){
+             //layer.msg(JSON.stringify(obj.param));
+            window.parent.right.reloadTable(obj.param.nodeId);
+        });
+    });
+
+</script>
+</body>
+</html>

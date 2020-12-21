@@ -1,0 +1,162 @@
+{include file="public/header" /}
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <!-- 查询条件开始 -->
+        <blockquote class="layui-elem-quote">
+            <form action="" method="post" id="searchFrm" lay-filter="searchFrm" class="layui-form layui-form-pane">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">供应商</label>
+                        <div class="layui-input-inline">
+                            <select name="key" id="search_providerid">
+                                <option  value="">选择供应商</option>
+                                {volist name="search_provider" id="v"}
+                                <option value="{$key}">{$v}</option>
+                                {/volist}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">商品名称</label>
+                        <div class="layui-input-inline">
+                            <select name="goodsid" id="search_goodsid">
+                                <option  value="">选择商品</option>
+                                {volist name="search_goods" id="v"}
+                                <option value="{$key}">{$v}</option>
+                                {/volist}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">退货时间</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="start" readonly="readonly"  onfocus="wk.lay_date(this);" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">操作员</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="operateperson"  autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">退货原因</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="remark"  autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">结束时间</label>
+                        <div class="layui-input-inline">
+                            <input type="text"  name="end" readonly="readonly"  onfocus="wk.lay_date(this);"  autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block" style="text-align: center;">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="LAY-search"><span class="layui-icon layui-icon-search"></span>查询</button>
+                        <button  lay-filter="LAY-search" id="empty" class="layui-btn layui-btn-warm"><span class="layui-icon layui-icon-refresh-1"></span>重置</button>
+                    </div>
+                </div>
+            </form>
+        </blockquote>
+        <!-- 查询条件结束-->
+        <div class="layui-card-body">
+            <table id="LAY-table-manage" lay-filter="LAY-table-manage"></table>
+        </div>
+    </div>
+    <script type="text/html" id="toolbarDemo">
+        <div class="layui-btn-container">
+            <button type="button" class="layui-btn layui-btn-danger" lay-event="batchdel">
+                <i class="layui-icon">&#xe640;</i> 批量删除
+            </button>
+        </div>
+    </script>
+</div>
+
+{include file="public/footer" /}
+<script>
+    var tableIns;
+    layui.use(['table','form'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , table = layui.table
+        tableIns=table.render({
+            elem: '#LAY-table-manage'
+            , url: '{:url("admin/Outport/outport")}'
+            ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            ,response: {
+                statusCode: 220 //成功的状态码，默认：0
+            }
+            , page: true
+            , even: true //开启隔行背景
+            , size: 'lg' //sm小尺寸的表格 lg大尺寸
+            // ,width:100
+            , autoSort: false
+            , height: "full-100"
+            , cellMinWidth: 150
+            , limits: [10, 20, 30, 40, 50]
+            , limit: 10
+            , loading: true
+            , id: 'LAY-table'
+            , title:'商品退货数据表'
+            , cols: [[
+                {type: 'checkbox', fixed: 'left',}
+                ,{field:'id', title:'退货单ID',align:'center',sort: true}
+                ,{field:'goodsid', title:'商品名称',align:'center',templet:"<div>{{d.goods.goodsname}}</div>"}
+                ,{field:'providerid', title:'供应商',align:'center',templet:"<div>{{d.provider.providername}}</div>"}
+                ,{field:'operateperson', title:'操作员',align:'center'}
+                ,{field:'remark', title:'退货原因',align:'center'}
+                ,{field:'number', title:'退货数量',align:'center'}
+                ,{field:'outportprice', title:'退货价格',align:'center'}
+                ,{field:'paytype', title:'支付类型',align:'center'}
+                ,{field:'inportid', fixed:'right',title:'进货单ID',align:'center'}
+                ,{field:'outputtime', fixed:'right',title:'退货时间',align:'center',width:200}
+            ]]
+            ,done: function(res, curr, count){ //处理删除某一页最后一条数据的BUG
+                if(res.data.length==0&&curr!=1){
+                    tableIns.reload({
+                        page:{
+                            curr:(curr-1)
+                        }
+                    });
+                }
+            }
+        });
+
+        //事件
+        table.on('toolbar(LAY-table-manage)', function(obj) {
+            //批量删除
+            if (obj.event == 'batchdel') {
+                wk.batchDel(getIds(), "{:url('admin/outport/batchDelOutPort')}");
+            }
+        });
+        var getIds = function () {
+            var ids = [];
+            var checkStatus = table.checkStatus('LAY-table')
+                ,data = checkStatus.data;
+            $.each(data,function(index,item){
+                ids.push(item['id'])
+            });
+            return ids;
+        }
+
+    });
+
+    //给其它页面刷新当前页面数据表格的方法
+    function reloadTable(id){
+        tableIns.reload({
+            where:{
+                id:id
+            },
+            page:{
+                curr:1
+            }
+        });
+    }
+</script>
+</body>
+</html>

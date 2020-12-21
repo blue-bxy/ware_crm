@@ -1,0 +1,206 @@
+{include file="public/header" /}
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <!-- 查询条件开始 -->
+        <blockquote class="layui-elem-quote">
+            <form action="" method="post" id="searchFrm" lay-filter="searchFrm" class="layui-form layui-form-pane">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <select name="key"  lay-search="">
+                                <option  value="">选择供应商</option>
+                                {volist name="search_provider" id="v"}
+                                <option value="{$key}" {if condition="$val eq $key"}selected{/if}>{$v}</option>
+                                {/volist}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="goodsname" placeholder="商品名称" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="produceplace" placeholder="生产地" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="productcode"  placeholder="生产批号" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="promitcode" placeholder="批准文号" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="description" placeholder="商品描述" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="size" placeholder="商品规格" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block" style="text-align: center;">
+                        <button type="button" class="layui-btn" lay-submit="" lay-filter="LAY-search"><span class="layui-icon layui-icon-search"></span>查询</button>
+                        <button  lay-filter="LAY-search" id="empty" class="layui-btn layui-btn-warm"><span class="layui-icon layui-icon-refresh-1"></span>重置</button>
+                    </div>
+                </div>
+            </form>
+        </blockquote>
+        <!-- 查询条件结束-->
+        <div class="layui-card-body">
+            <table id="LAY-table-manage" lay-filter="LAY-table-manage"></table>
+            <!--头部工具栏-->
+            <script type="text/html" id="toolbarDemo">
+                <div class="layui-btn-container">
+                    <button type="button" class="layui-btn" lay-event="addGoods">
+                        <i class="layui-icon">&#xe624;</i>添加商品
+                    </button>
+                    <button type="button" class="layui-btn layui-btn-danger" lay-event="batchdel">
+                        <i class="layui-icon">&#xe640;</i> 批量删除
+                    </button>
+                </div>
+            </script>
+            <!--操作模板-->
+            <script type="text/html" id="opeBar">
+                <button type="button"  title="编辑" class="layui-btn layui-btn-xs" onclick="wk.layer_show('编辑商品信息','{:url('admin/goods/edit_goods')}?id={{d.id}}')"><span class="layui-icon layui-icon-edit"></span></button>
+                <button type="button"  title="删除" class="layui-btn layui-btn-xs layui-btn-danger" onclick="wk.confirm('{{d.id}}','{:url('DeleteGoods')}')"><span class="layui-icon layui-icon-delete"></span></button>
+            </script>
+            <!--状态模板-->
+            <script type="text/html" id="staBar">
+                <input type="checkbox" value="{{d.id}}"  lay-skin="switch"  lay-text="有效|无效" lay-filter="OnOff"{{ d.available == 1 ? 'checked' : '' }}  >
+            </script>
+            <script type="text/html" id="num">
+                <div style="color: red">{{d.dangernum}}</div>
+            </script>
+            <script type="text/html" id="goodsimg">
+                <div>
+                    <img src="http://q6wzo0utw.bkt.clouddn.com//{{d.goodsimg}}" class="layui-circle-img" onerror="this.src='../../static/images/head_default.gif'"/>
+                </div>
+            </script>
+        </div>
+    </div>
+</div>
+{include file="public/footer" /}
+<script>
+    var tableIns;
+    layui.use(['table','form'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , table = layui.table
+        tableIns=table.render({
+            elem: '#LAY-table-manage'
+            , url: '{:url("admin/Goods/goods")}'
+            ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            ,response: {
+                statusCode: 220 //成功的状态码，默认：0
+            }
+            , page: true
+            , even: true //开启隔行背景
+            , size: 'lg' //sm小尺寸的表格 lg大尺寸
+            // ,width:100
+            , autoSort: false
+            , height: "full-50"
+            , cellMinWidth: 150
+            , limits: [10, 20, 30, 40, 50]
+            , limit: 10
+            , loading: true
+            , id: 'LAY-table'
+            , title:'商品数据表'
+            , cols: [[
+                {type: 'checkbox', fixed: 'left',}
+                ,{field:'id', title:'ID',align:'center',sort: true}
+                ,{field:'goodsname', title:'商品名称',align:'center'}
+                ,{field:'goodsimg', title:'商品图片',align:'center',templet:"#goodsimg"}
+                ,{field:'providerid', title:'供应商',align:'center',templet:"<div>{{d.provider.providername}}</div>"}
+                ,{field:'produceplace', title:'产地',align:'center'}
+                ,{field:'size', title:'商品规格',align:'center'}
+                ,{field:'goodspackage', title:'商品包装',align:'center'}
+                ,{field:'productcode', title:'生产批号',align:'center'}
+                ,{field:'promitcode', title:'批准文号',align:'center'}
+                ,{field:'description', title:'商品描述',align:'center'}
+                ,{field:'price', title:'商品价格/元',align:'center'}
+                ,{field:'number', title:'库存量',align:'center'}
+                ,{field:'dangernum', fixed:'right',autoHeight:'100',title:'预警库存',align:'center',templet:"#num"}
+                ,{field:'available',fixed:'right', title:'状态',align:'center',templet:"#staBar"}
+                ,{fixed: 'right', title:'操作', toolbar: '#opeBar',align:'center'}
+            ]]
+            ,done: function(res, curr, count){
+                //图片查看器
+                $('.layui-circle-img').viewer({
+                    url: 'data-original',
+                });
+                //$('.layui-circle-img').viewer();
+
+                //处理删除某一页最后一条数据的BUG
+                if(res.data.length==0&&curr!=1){
+                    tableIns.reload({
+                        page:{
+                            curr:(curr-1)
+                        }
+                    });
+                }
+            }
+        });
+
+        //监听可用开关操作
+        form.on('switch(OnOff)', function (obj) {
+            var available = '';
+            obj.elem.checked == true? available = 1: available = 0;
+            //商品可用状态
+            wk.state(this.value,available, '{:url("goods_state")}',obj);
+        });
+
+        //事件
+        table.on('toolbar(LAY-table-manage)', function(obj) {
+            //批量删除
+            if (obj.event == 'batchdel') {
+                wk.batchDel(getIds(), "{:url('admin/Goods/batchDelGoods')}");
+            }
+            //添加商品
+            if(obj.event=='addGoods'){
+                wk.layer_show("添加商品","{:url('admin/Goods/add_goods')}");
+            }
+        });
+        var getIds = function () {
+            var ids = [];
+            var checkStatus = table.checkStatus('LAY-table')
+                ,data = checkStatus.data;
+            $.each(data,function(index,item){
+                ids.push(item['id'])
+            });
+            return ids;
+        }
+    });
+
+    //给其它页面刷新当前页面数据表格的方法
+    function reloadTable(id){
+        tableIns.reload({
+            where:{
+                id:id
+            },
+            page:{
+                curr:1
+            }
+        });
+    }
+</script>
+<style type="text/css">
+    .layui-table-cell {
+        /*height: auto !important;*/
+       /* white-space: normal;*/
+    }
+    .layui-table img{
+        /*max-width:200px*/
+    }
+</style>
+</body>
+</html>

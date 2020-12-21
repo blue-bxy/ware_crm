@@ -1,0 +1,96 @@
+{include file="public/header" /}
+<body>
+<form class="layui-form layui-form-pane" action="" style="margin-left: 10px">
+    <div class="layui-form-item">
+        <label class="layui-form-label">父级菜单</label>
+        <div class="layui-input-block">
+            <input type="hidden" name="pid" id="pid">
+            <ul id="selTree"  class="dtree" data-id="0"></ul>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">权限名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="title" lay-verify="required" placeholder="请输入权限名称" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">权限编码</label>
+        <div class="layui-input-block">
+            <input type="text" name="percode" lay-verify="required" placeholder="控制器名:操作名称" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item" pane="">
+        <label class="layui-form-label">是否可用</label>
+        <div class="layui-input-block">
+            <input type="radio" name="available" value="1" title="可用" checked="">
+            <input type="radio" name="available" value="0" title="不可用">
+        </div>
+    </div>
+    <div class="layui-form-item" pane="">
+        <label class="layui-form-label">是否展开</label>
+        <div class="layui-input-block">
+            <input type="radio" name="open" value="1" title="展开" checked="">
+            <input type="radio" name="open" value="0" title="不展开">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">排序</label>
+        <div class="layui-input-block">
+            <input type="text" name="ordernum"  lay-verify="required|number" placeholder="请填写排序值,值越大就靠后" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <button class="layui-btn" lay-submit="" lay-filter="add">提交</button>
+        <button class="layui-btn layui-btn-primary" onclick="wk.layer_close('close')">关闭</button>
+    </div>
+</form>
+{include file="public/footer" /}
+<script>
+    layui.extend({
+        dtree: '../../static/layui_ext/dtree/dtree' ,  // {/}的意思即代表采用自有路径，即不跟随 base 路径
+    }).use(['dtree','layer','jquery','form'], function(){
+        var dtree = layui.dtree;
+        var form=layui.form;
+        //初始化下拉树
+        var selectTree=dtree.renderSelect({
+            elem: "#selTree",
+            width: "100%", // 可以在这里指定树的宽度来填满div
+            dataStyle: "layuiStyle",  //使用layui风格的数据格式
+            dataFormat: "list",  //配置data的风格为list
+            response:{message:"msg",statusCode:0},  //修改response中返回数据的定义
+            menubar: true, //开启菜单栏
+            url: "admin/permission/json" // 使用url加载（可与data加载同时存在）
+        });
+
+        //监听点击的方法
+        dtree.on("node(selTree)" ,function(obj){
+            $("#pid").val(obj.param.nodeId);
+            console.log(obj.param.nodeId); // 点击当前节点传递的参数
+        });
+
+        //监听提交事件
+        form.on('submit(add)',function (data) {
+            $('.layui-btn').addClass('layui-disabled').attr('disabled', 'disabled');
+            $.ajax({
+                url: "{:url('admin/Permission/add_permission')}",
+                type: 'post',
+                dataType: 'json',
+                data: data.field,
+                success: function (res) {
+                    if (res.code == 1) {
+                        layer.msg(res.msg, {icon: 6, time: 1500, shade: 0.1}, function (index) {
+                            wk.layer_close();
+                        })
+                    } else {
+                        $(".layui-btn").removeClass('layui-disabled').removeAttr('disabled');
+                        layer.msg(res.msg, {icon: 2, time: 1500, shade: 0.1});
+                        return false;
+                    }
+                }
+            })
+        })
+    });
+</script>
+</body>
+</html>

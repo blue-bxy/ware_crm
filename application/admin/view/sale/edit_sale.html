@@ -1,0 +1,130 @@
+{include file="public/header" /}
+<body>
+<form class="layui-form layui-form-pane" action="" style="padding: 30px 30px">
+    <div class="layui-form-item">
+        <div class="layui-inline">
+            <label class="layui-form-label">客户</label>
+            <div class="layui-input-inline">
+                <select name="customerid" id="search_customerid" lay-filter="customerid" lay-verify="required">
+                    <option  value="">选择客户</option>
+                    {volist name="search_customer" id="v"}
+                    <option value="{$key}" {if condition="$key eq $sale.customerid"}selected{/if}>{$v}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+        <div class="layui-inline">
+            <label class="layui-form-label">选择商品</label>
+            <div class="layui-input-inline">
+                <select name="goodsid" id="goodsid" lay-filter="goodsid" lay-verify="required">
+                    <option  value="">请选择</option>
+                    {volist name="search_goods" id="v"}
+                    <option value="{$key}" {if condition="$key eq $sale.goodsid"}selected{/if}>{$v}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">销售数量</label>
+                <div class="layui-input-inline">
+                    <input type="hidden" name="id" value="{$sale.id}">
+                    <input type="text" class="layui-input" id="number" value="{$sale.number}" name="number" lay-verify="required|number|checknumber" placeholder="请先选择商品">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">销售价格/元</label>
+                <div class="layui-input-inline">
+                    <input type="text" class="layui-input" name="saleprice" value="{$sale.saleprice}" lay-verify="required|number" placeholder="请输入商品销售价格">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">销售时间</label>
+                <div class="layui-input-inline">
+                    <input type="text" class="layui-input" name="salestime" value="{$sale.salestime}" lay-verify="required" onfocus="wk.lay_date(this);" placeholder="请输入销售时间">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">支付类型</label>
+                <div class="layui-input-block">
+                <input type="radio" name="paytype" value="支付宝" title="支付宝" {if condition="$sale.paytype eq '支付宝'"} checked {/if}>
+                <input type="radio" name="paytype" value="微信" title="微信" {if condition="$sale.paytype eq '微信'"} checked {/if}>
+                <input type="radio" name="paytype" value="信用卡" title="信用卡" {if condition="$sale.paytype eq '信用卡'"} checked {/if}>
+                <input type="radio" name="paytype" value="银联" title="银联" {if condition="$sale.paytype eq '银联'"} checked {/if}>
+            </div>
+            </div>
+        </div>
+    </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+                <textarea  name="remark" class="layui-textarea">{$sale.remark}</textarea>
+            </div>
+        </div>
+    <div class="layui-form-item">
+        <button class="layui-btn" lay-submit="" lay-filter="update">提交</button>
+        <button class="layui-btn layui-btn-primary" onclick="wk.layer_close('close')">关闭</button>
+    </div>
+</form>
+{include file="public/footer" /}
+<script>
+    layui.use(['layer','jquery','form'], function(){
+        var form=layui.form;
+
+        //监听添加页面的商品下拉框事件
+        var goodscount='';
+        form.on('select(goodsid)', function(data){
+            var goodsid=data.value;
+            $.get("admin/sale/loadGoodsCountByGoodsId",{goodsid:goodsid},function(res){
+                if(res.code==200){
+                    goodscount=res.data;
+                    $("#number").attr("placeholder","最多可销售数量"+goodscount);
+                }else{
+                    layer.msg("获取该商品的数量失败");
+                }
+            });
+        });
+
+        //自定义验证规则
+        form.verify({
+            checknumber: function(value){
+                if(goodscount!=''){
+                    if(parseInt(value)>goodscount||parseInt(value)<1){
+                        return '销售数量只能在【1】-【'+goodscount+"】数量之间";
+                    }
+                }else{
+                    var count= {$goodscount};
+                    if(parseInt(value)>count||parseInt(value)<1){
+                        return '销售数量只能在【1】-【'+count+"】数量之间";
+                    }
+                }
+            }
+        });
+
+        //监听提交事件
+        form.on('submit(update)',function (data) {
+            $('.layui-btn').addClass('layui-disabled').attr('disabled', 'disabled');
+            $.ajax({
+                url: "{:url('admin/sale/edit_sale')}",
+                type: 'post',
+                dataType: 'json',
+                data: data.field,
+                success: function (res) {
+                    if (res.code == 1) {
+                        layer.msg(res.msg, {icon: 6, time: 1500, shade: 0.1}, function (index) {
+                            wk.layer_close();
+                        })
+                    } else {
+                        $(".layui-btn").removeClass('layui-disabled').removeAttr('disabled');
+                        layer.msg(res.msg, {icon: 2, time: 1500, shade: 0.1});
+                        return false;
+                    }
+                }
+            })
+        })
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+{include file="public/header" /}
+<body>
+<form class="layui-form layui-form-pane" action="" style="padding: 30px 30px">
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品名称</label>
+        <div class="layui-input-block">
+            <input type="hidden" name="id" value="{$goods.id}">
+            <input type="text" name="goodsname" value="{$goods.goodsname}" lay-verify="required" autocomplete="off" placeholder="请输入商品名称" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品描述</label>
+        <div class="layui-input-block">
+            <input type="text" name="description" value="{$goods.description}" lay-verify="required" autocomplete="off" placeholder="请输入" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">商品图片</label>
+        <div class="layui-input-block">
+            <input type="hidden" name="goodsimg" id="banner" value="{$goods.goodsimg}">
+            <div class="layui-upload-drag" id="goodsimg">
+                <i class="layui-icon"></i>
+                <p>点击上传，或将文件拖拽到此处</p>
+                <div class="layui-hide" id="uploadDemoView">
+                    <hr>
+                    <img src="" alt="上传成功后渲染" style="max-width: 196px" id="img">
+                </div>
+                <div class="layui-upload-list">
+                    <p id="demoText"></p>
+                </div>
+            </div>
+            <button type="button" class="layui-btn" id="upload">开始上传</button>
+            <div class="layui-progress layui-progress-big" lay-filter="pro" lay-showPercent="yes">
+                <div class="layui-progress-bar" lay-percent="0%"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">供应商</label>
+        <div class="layui-input-block">
+            <select name="providerid"  lay-search="">
+                <option  value="">选择供应商</option>
+                {volist name="search_provider" id="v"}
+                <option value="{$v.id}" {if condition="$v.id eq $goods.providerid"}selected{/if}>{$v.providername}</option>
+                {/volist}
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">产地</label>
+        <div class="layui-input-block">
+            <input type="text" name="produceplace" value="{$goods.produceplace}" autocomplete="off" lay-verify="required" placeholder="请输入商品产地" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">包装</label>
+        <div class="layui-input-block">
+            <input type="text" name="goodspackage" value="{$goods.goodspackage}" lay-verify="required" autocomplete="off" placeholder="瓶/袋/盒/..." class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">规格</label>
+        <div class="layui-input-block">
+            <input type="text" name="size" value="{$goods.size}" lay-verify="required" autocomplete="off" placeholder="请输入商品规格" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">生产批号</label>
+        <div class="layui-input-block">
+            <input type="text" name="productcode" value="{$goods.productcode}" lay-verify="required" autocomplete="off" placeholder="请输入生产批号" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">批准文号</label>
+        <div class="layui-input-block">
+            <input type="text" name="promitcode" value="{$goods.promitcode}" lay-verify="required" autocomplete="off" placeholder="请输入批准文号" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">销售价格</label>
+        <div class="layui-input-block">
+            <input type="text" name="price" value="{$goods.price}" lay-verify="required|number" autocomplete="off" placeholder="请输入销售价格" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">库存量</label>
+        <div class="layui-input-block">
+            <input type="text" name="number" value="{$goods.number}" lay-verify="required|number" autocomplete="off" placeholder="请输入库存量" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item" pane="">
+        <label class="layui-form-label">是否有效</label>
+        <div class="layui-input-block">
+            <input type="radio" name="available" value="1" title="有效" {if condition="$goods.available eq '1'"} checked {/if}>
+            <input type="radio" name="available" value="0" title="无效" {if condition="$goods.available eq '0'"} checked {/if}>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <button class="layui-btn" lay-submit="" lay-filter="update" id="update">提交</button>
+        <button class="layui-btn layui-btn-primary" onclick="wk.layer_close('close')">关闭</button>
+    </div>
+</form>
+{include file="public/footer" /}
+<script>
+    $(function () {
+        //将图片显示出来
+        var img='{$goods.goodsimg}';
+        layui.$('#uploadDemoView').removeClass('layui-hide').find('img').attr('src','http://q6wzo0utw.bkt.clouddn.com/'+img);
+    })
+</script>
+<script>
+    layui.use(['layer','jquery','form','upload','element'], function(){
+        var form=layui.form;
+        var upload=layui.upload;
+        var element=layui.element;
+        //商品图片上传
+        var uploadInst=upload.render({
+            elem: '#goodsimg'
+            ,accept:'images'
+            ,acceptMime: 'image/*'
+            ,size:50000
+            ,auto:false
+            ,bindAction:'#upload'
+            ,url: 'admin/upload/upload' //改成您自己的上传接口
+            ,before: function(obj){
+                $("#upload").addClass('layui-disabled').attr('disabled','disabled').html('上传中... &nbsp;<i class="layui-icon layui-icon-loading-1 layui-icon layui-anim layui-anim-rotate layui-anim-loop"></i>');
+            }
+            ,choose: function(obj){
+                //预读本地文件示例，不支持ie8
+                obj.preview(function(index, file, result){
+                    //图片链接（base64）直接将图片地址赋值给img的src属性
+                    layui.$('#uploadDemoView').removeClass('layui-hide').find('img').attr('src', result);
+                });
+            }
+            ,progress: function(n, elem){
+                var percent = n + '%'; //获取进度百分比
+                element.progress('pro', percent); //可配合 layui 进度条元素使用
+
+                //以下系 layui 2.5.6 新增
+                //console.log(elem); //得到当前触发的元素 DOM 对象。可通过该元素定义的属性值匹配到对应的进度条。
+            }
+            ,done: function(res){
+                if(res.code==1){
+                    $("#banner").val(res.data);
+                    $("#upload").removeClass('layui-disabled').removeAttr('disabled').text("开始上传");
+                    layer.msg('上传成功');
+                }
+            }
+            ,error: function(){
+                //演示失败状态，并实现重传
+                var demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;font-size:20px;margin-left:150px">图片上传失败</span> <a class="layui-btn demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function(){
+                    uploadInst.upload();
+                });
+            }
+        });
+        //监听提交事件
+        form.on('submit(update)',function (data) {
+            $('.layui-btn').addClass('layui-disabled').attr('disabled', 'disabled');
+            $.ajax({
+                url: "{:url('admin/Goods/edit_goods')}",
+                type: 'post',
+                dataType: 'json',
+                data: data.field,
+                success: function (res) {
+                    if (res.code == 1) {
+                        layer.msg(res.msg, {icon: 6, time: 1500, shade: 0.1}, function (index) {
+                            wk.layer_close();
+                        })
+                    } else {
+                        $(".layui-btn").removeClass('layui-disabled').removeAttr('disabled');
+                        layer.msg(res.msg, {icon: 2, time: 1500, shade: 0.1});
+                        return false;
+                    }
+                }
+            })
+        })
+    });
+</script>
+</body>
+</html>

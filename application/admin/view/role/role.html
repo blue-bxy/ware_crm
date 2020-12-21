@@ -1,0 +1,213 @@
+{include file="public/header" /}
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="start" class="layui-input" onfocus="wk.lay_date(this);" placeholder="开始日期">
+                    </div>
+                    <div class="layui-form-mid">
+                        -
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="end" class="layui-input" onfocus="wk.lay_date(this);" placeholder="结束日期">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="name" placeholder="角色名称" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="text" name="remark" placeholder="角色备注" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <input type="radio" name="available" value="1" title="可用">
+                        <input type="radio" name="available" value="0" title="不可用">
+                    </div>
+                </div>
+                <!--<div class="layui-inline">
+                    <div class="layui-input-inline">
+                            <label class="layui-form-label">是否可用</label>
+                            <input type="radio" name="available" value="1" title="可用">
+                            <input type="radio" name="available" value="0" title="不可用">
+                    </div>
+                </div>-->
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <button class="layui-btn" lay-submit="" lay-filter="LAY-search">立即搜索</button>
+                        <button class="layui-btn layui-btn-normal" id="empty"  lay-submit="" lay-filter="LAY-search">重置</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <table id="LAY-table-manage" lay-filter="LAY-table-manage"></table>
+            <!--头部工具栏-->
+            <script type="text/html" id="toolbarDemo">
+                <div class="layui-btn-container">
+                    <button type="button" class="layui-btn" lay-event="addrole">
+                        <i class="layui-icon">&#xe624;</i>添加角色
+                    </button>
+                    <button type="button" class="layui-btn layui-btn-danger" lay-event="batchdel">
+                        <i class="layui-icon">&#xe640;</i> 批量删除
+                    </button>
+                </div>
+            </script>
+            <!--操作模板-->
+            <script type="text/html" id="opeBar">
+                <button type="button"  title="编辑" class="layui-btn layui-btn-xs" onclick="wk.layer_show('编辑角色','{:url('admin/Role/edit_role')}?id={{d.id}}')"><span class="layui-icon layui-icon-edit"></span></button>
+                <button type="button" title="分配权限" class="layui-btn layui-btn-xs layui-btn-normal" lay-event="giveQx"><span class="layui-icon layui-icon-senior"></span></button>
+                <button type="button"  title="删除" class="layui-btn layui-btn-xs layui-btn-danger" onclick="wk.confirm('{{d.id}}','{:url('admin/Role/del_role')}')"><span class="layui-icon layui-icon-delete"></span></button>
+            </script>
+            <!--状态模板-->
+            <script type="text/html" id="staBar">
+                {{# if(d.available==1){ }}
+                <span class="layui-badge layui-bg-green">可用</span>
+                {{# }else{ }}
+                <span class="layui-badge">禁用</span>
+                {{# } }}
+            </script>
+        </div>
+    </div>
+</div>
+<!--权限分配-->
+<div style="display: none;" id="giveQx">
+    <ul id="permissionTree" class="dtree" data-id="0"></ul>
+</div>
+{include file="public/footer" /}
+<script type="text/javascript">
+    layui.extend({
+        dtree: '../../static/layui_ext/dtree/dtree'   // {/}的意思即代表采用自有路径，即不跟随 base 路径
+    }).use(['table','form','dtree'], function () {
+            var form = layui.form;
+            var table = layui.table;
+            var dtree = layui.dtree;
+        var tableIns=table.render({
+            elem: '#LAY-table-manage'
+            , url: '{:url("admin/Role/role")}'
+            ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            ,response: {
+                statusCode: 220 //成功的状态码，默认：0
+            }
+            , page: true
+            , even: true //开启隔行背景
+            , size: 'lg' //sm小尺寸的表格 lg大尺寸
+            // ,width:100
+            , autoSort: false
+            , height: "full-50"
+            , cellMinWidth: 150
+            , limits: [10, 20, 30, 40, 50]
+            , limit: 10
+            , loading: true
+            , id: 'LAY-table'
+            , cols: [[
+                {type: 'checkbox', fixed: 'left',}
+                , {type:'numbers',  title: '序号'}
+                , {field: 'name',  title: '角色名称', align: 'center'}
+                , {field: 'remark',  title: '备注', align: 'center'}
+                ,{field:'available', title:'是否可用',align:'center', templet: '#staBar'}
+                , {field: 'create_time',  title: '发布时间', sort: true, align: 'center',templet:"<div>{{layui.util.toDateString(d.create_time*1000,'yyyy年MM月dd日')}}</div>"}
+                , {fixed: 'right',  title: '操作', align: 'center', toolbar: '#opeBar'}
+            ]]
+            ,done: function(res, curr, count){ //处理删除某一页最后一条数据的BUG
+                if(res.data.length==0&&curr!=1){
+                    tableIns.reload({
+                        page:{
+                            curr:(curr-1)
+                        }
+                    });
+                }
+            }
+        });
+
+        //事件
+        table.on('toolbar(LAY-table-manage)', function(obj) {
+            //批量删除
+            if (obj.event == 'batchdel') {
+                wk.batchDel(getIds(), "{:url('admin/Role/batchDelRole')}");
+            }
+            //添加角色
+            if(obj.event=='addrole'){
+                wk.layer_show("添加角色","{:url('admin/Role/add_role')}");
+            }
+        });
+        var getIds = function () {
+            var ids = [];
+            var checkStatus = table.checkStatus('LAY-table')
+                ,data = checkStatus.data;
+            $.each(data,function(index,item){
+                ids.push(item['id'])
+            });
+            return ids;
+        }
+
+        //监听行工具条事件
+        table.on("tool(LAY-table-manage)",function(obj){
+            var data = obj.data; //获得当前行数据
+            if(obj.event=='giveQx'){
+                giveQx(data);
+            }
+        });
+        //打开分配权限的页面
+        function giveQx(data){
+            mainIndex=layer.open({
+                type:1,
+                content:$("#giveQx"),
+                area:['300px','500px'],
+                title:'分配【'+data.name+'】的权限',
+                btn: ['<span class=layui-icon>&#xe605;确认分配</span>', '<span class=layui-icon>&#x1006;关闭</span>'],
+                yes: function(index, layero){
+                    //得到树选中的所有节点
+                    var permissionData = dtree.getCheckbarNodesParam("permissionTree");
+                    var NodeString = '';
+                    $.each(permissionData,function(index,item){
+                        if(index>0){
+                            NodeString += ',';
+                        }
+                        NodeString += item.nodeId;
+                    });
+                    $.post("admin/role/giveQx",{'id' :data.id, 'rule' : NodeString},function(res){
+                        console.log(res);
+                        if(res.code==1){
+                            layer.closeAll();
+                            layer.msg(res.msg);
+                        }else{
+                            layer.msg(res.msg);
+                        }
+
+                    })
+                },
+                btn2: function(index, layero){
+                    //return false 开启该代码可禁止点击该按钮关闭
+                },
+                btnAlign: 'c',//使按钮居中
+                success:function(){
+                    //根据角色ID请求权限和菜单tree的json数据
+                    $.getJSON("{:url('admin/role/json')}", {'roleId' : data.id}, function(res){
+                        if(res.code == 200){
+                            var Nodes = JSON.parse(res.data);  //将字符串转换成obj
+                            var Qx=dtree.render({
+                                elem: "#permissionTree",
+                                //url: "admin/role/json?roleId="+data.id,
+                                data:Nodes,
+                                dataStyle: "layuiStyle",  //使用layui风格的数据格式
+                                dataFormat: "list",  //配置data的风格为list
+                                response:{message:"msg",statusCode:0},  //修改response中返回数据的定义
+                                checkbar: true,//开启复选框
+                                checkbarType: "all" // 默认就是all，其他的值为： no-all  p-casc   self  only
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
