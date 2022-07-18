@@ -15,3 +15,4 @@ function get_ip_area($ip){
         return $arr['data']['country'].$arr['data']['region'].$arr['data']['city'].$arr['data']['isp'];
     }
 }
+
